@@ -48,9 +48,9 @@ fancy_echo "Install Oh-My-Zsh, an open source framework for managing your ZSH co
     touch $HOME/.zshrc.local
   fi
 
-  printf 'if [[ -f ~/.zshrc.local ]]; then' >> ~/.zshrc
-  printf '  source ~/.zshrc.local' >> ~/.zshrc
-  printf 'fi'
+  printf 'if [[ -f ~/.zshrc.local ]]; then\n' >> ~/.zshrc
+  printf '  source ~/.zshrc.local\n' >> ~/.zshrc
+  printf 'fi\n' >> ~/.zshrc
 
 if [[ ! -d "$HOME/.rbenv" ]]; then
   fancy_echo "Installing rbenv, to change Ruby versions ..."
