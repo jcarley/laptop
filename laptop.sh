@@ -142,4 +142,7 @@ fancy_echo "Installing GitHub CLI client ..."
 fancy_echo "Cleaning up temp space"
   rm -rf $HOME/tmp
 
+fancy_echo "Finished...loging you out."
+  pkill -KILL -u $(whoami)
+
 
