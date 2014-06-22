@@ -6,6 +6,10 @@ fancy_echo() {
   printf "\n%b\n" "$1"
 }
 
+if [[ ! -d "$HOME/.bin/" ]]; then
+  mkdir "$HOME/.bin"
+fi
+
 if [[ ! -d "$HOME/tmp/" ]]; then
   mkdir "$HOME/tmp"
 fi
@@ -51,6 +55,11 @@ fancy_echo "Install Oh-My-Zsh, an open source framework for managing your ZSH co
   printf 'if [[ -f ~/.zshrc.local ]]; then\n' >> ~/.zshrc
   printf '  source ~/.zshrc.local\n' >> ~/.zshrc
   printf 'fi\n' >> ~/.zshrc
+
+  if [[ ":$PATH:" != *":$HOME/.bin:"* ]]; then
+    printf 'export PATH="$HOME/.bin:$PATH"\n' >> ~/.zshrc.local
+    export PATH="$HOME/.bin:$PATH"
+  fi
 
 if [[ ! -d "$HOME/.rbenv" ]]; then
   fancy_echo "Installing rbenv, to change Ruby versions ..."
