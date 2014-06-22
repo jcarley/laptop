@@ -1,0 +1,136 @@
+#!/usr/bin/env bash
+
+trap 'ret=$?; test $ret -ne 0 && printf "failed\n\n" >&2; exit $ret' EXIT
+
+fancy_echo() {
+  printf "\n%b\n" "$1"
+}
+
+if [[ ! -d "$HOME/tmp/" ]]; then
+  mkdir "$HOME/tmp"
+fi
+
+fancy_echo "Updating system packages ..."
+  if command -v aptitude >/dev/null; then
+    fancy_echo "Using aptitude ..."
+  else
+    fancy_echo "Installing aptitude ..."
+    sudo apt-get install -y aptitude
+  fi
+
+  sudo aptitude update
+
+sudo apt-get install curl git-core openjdk-7-jdk openssh-server -y
+
+fancy_echo "Installing base ruby build dependencies ..."
+  sudo aptitude build-dep -y ruby1.9.3
+
+fancy_echo "Installing libraries for common gem dependencies ..."
+  sudo aptitude install -y libxslt1-dev libcurl4-openssl-dev libksba8 libksba-dev libqtwebkit-dev libreadline-dev
+
+fancy_echo "Installing sqlite3, for prototyping database-backed rails apps"
+ sudo aptitude install -y libsqlite3-dev sqlite3
+
+fancy_echo "Installing MySQL Server, a good open source relational database ..."
+  sudo aptitude install -y mysql-server-5.5 mysql-client-5.5
+
+fancy_echo "Installing MySQL Workbench, a integrated tools environment for MySQL Server ..."
+  wget http://dev.mysql.com/get/Downloads/MySQLGUITools/mysql-workbench-community-6.1.6-1ubu1310-amd64.deb -O $HOME/tmp/mysql-workbench.deb
+  sudo dpkg -i $HOME/tmp/mysql-workbench.deb
+
+fancy_echo "Installing zsh ..."
+  sudo aptitude install -y zsh
+
+fancy_echo "Install Oh-My-Zsh, an open source framework for managing your ZSH configuration ..."
+  curl -L http://install.ohmyz.sh | sh
+
+  if [ ! -f "$HOME/.zshrc.local" ]; then
+    touch $HOME/.zshrc.local
+  fi
+
+  printf 'if [[ -f ~/.zshrc.local ]]; then' >> ~/.zshrc
+  printf '  source ~/.zshrc.local' >> ~/.zshrc
+  printf 'fi'
+
+if [[ ! -d "$HOME/.rbenv" ]]; then
+  fancy_echo "Installing rbenv, to change Ruby versions ..."
+    curl https://raw.githubusercontent.com/jcarley/rbenv-installer/master/bin/rbenv-installer | bash
+
+    if ! grep -qs "rbenv init" ~/.zshrc.local; then
+      printf 'export PATH="$HOME/.rbenv/bin:$PATH"\n' >> ~/.zshrc.local
+      printf 'eval "$(rbenv init - --no-rehash)"\n' >> ~/.zshrc.local
+    fi
+
+    export PATH="$HOME/.rbenv/bin:$PATH"
+    eval "$(rbenv init -)"
+fi
+
+ruby_version="2.1.2"
+
+fancy_echo "Installing Ruby $ruby_version ..."
+  rbenv install -s "$ruby_version"
+
+fancy_echo "Setting $ruby_version as global default Ruby ..."
+  rbenv global "$ruby_version"
+  rbenv rehash
+
+fancy_echo "Updating to latest Rubygems version ..."
+  gem update --system
+
+fancy_echo "Installing Bundler to install project-specific Ruby gems ..."
+  gem install bundler --no-document
+
+fancy_echo "Configuring Bundler for faster, parallel gem installation ..."
+  number_of_cores=$(nproc)
+  bundle config --global jobs $((number_of_cores - 1))
+
+fancy_echo "Installing node, to render the rails asset pipeline ..."
+  sudo aptitude install -y nodejs
+
+fancy_echo "Installing tmux, to save project state and switch between projects ..."
+  sudo aptitude install -y tmux
+  wget https://raw.githubusercontent.com/jcarley/dotmatrix/master/.tmux.conf -O $HOME/.tmux.conf >/dev/null
+
+fancy_echo "Install SublimeText 3, a sophisticated text editor for code, markup and prose."
+  wget http://c758482.r82.cf2.rackcdn.com/sublime-text_build-3059_amd64.deb -O $HOME/tmp/sublime.deb
+  sudo dpkg -i $HOME/tmp/sublime.deb
+
+fancy_echo "Install the Google Chrome browser ..."
+  wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb -O $HOME/tmp/chrome.deb
+  sudo dpkg -i $HOME/tmp/chrome.deb
+
+silver_searcher_from_source() {
+  git clone git://github.com/ggreer/the_silver_searcher.git /tmp/the_silver_searcher
+  sudo aptitude install -y automake pkg-config libpcre3-dev zlib1g-dev liblzma-dev
+  sh /tmp/the_silver_searcher/build.sh
+  cd /tmp/the_silver_searcher
+  sh build.sh
+  sudo make install
+  cd
+  rm -rf /tmp/the_silver_searcher
+}
+
+if ! command -v ag >/dev/null; then
+  fancy_echo "Installing The Silver Searcher (better than ack or grep) to search the contents of files ..."
+
+  if aptitude show silversearcher-ag &>/dev/null; then
+    sudo aptitude install silversearcher-ag
+  else
+    silver_searcher_from_source
+  fi
+fi
+
+fancy_echo "Installing Heroku CLI client ..."
+  curl -s https://toolbelt.heroku.com/install-ubuntu.sh | sh
+
+fancy_echo "Installing the heroku-config plugin to pull config variables locally to be used as ENV variables ..."
+  heroku plugins:install git://github.com/ddollar/heroku-config.git
+
+fancy_echo "Installing GitHub CLI client ..."
+  curl http://hub.github.com/standalone -sLo ~/.bin/hub
+  chmod +x ~/.bin/hub
+
+fancy_echo "Cleaning up temp space"
+  rm -rf $HOME/tmp
+
+
