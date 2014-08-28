@@ -157,6 +157,7 @@ fancy_echo "Installing random utilities, siege, ssh-copy-id, psgrep, wget ..."
 
 fancy_echo "Cloning dotmatrix ..."
   git clone https://github.com/jcarley/dotmatrix.git ~/dotmatrix
+  echo "Run ~/dotmatrix/bin/hlink, and ~/dotmatrix/bin/vimbundles.sh"
 
 fancy_echo "Linking in DropBox dotfiles ..."
   ln -s $HOME/Dropbox/dotfiles/home/git_template ~/.git_template
