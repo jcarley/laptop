@@ -74,9 +74,12 @@ fancy_echo "Install Oh-My-Zsh, an open source framework for managing your ZSH co
     touch $HOME/.zshrc.local
   fi
 
-  printf 'if [[ -f ~/.zshrc.local ]]; then\n' >> ~/.zshrc
-  printf '  source ~/.zshrc.local\n' >> ~/.zshrc
-  printf 'fi\n' >> ~/.zshrc
+  if ! grep -qs "source local custom shell settings" ~/.zshrc; then
+    printf '\n# source local custom shell settings\n' >> ~/.zshrc
+    printf 'if [[ -f ~/.zshrc.local ]]; then\n' >> ~/.zshrc
+    printf '  source ~/.zshrc.local\n' >> ~/.zshrc
+    printf 'fi\n' >> ~/.zshrc
+  fi
 
   if [[ ":$PATH:" != *":$HOME/.bin:"* ]]; then
     printf 'export PATH="$HOME/.bin:$PATH"\n' >> ~/.zshrc.local
@@ -163,4 +166,9 @@ fancy_echo "Linking in DropBox dotfiles ..."
   ln -s $HOME/Dropbox/dotfiles/home/git_template ~/.git_template
   ln -s $HOME/Dropbox/dotfiles/home/vimrc.local ~/.vimrc.local
   ln -s $HOME/Dropbox/dotfiles/home/zsh_aliases ~/.zsh_aliases
+
+zaliases="$HOME/.zsh_aliases"
+[[ ! -a $zaliases ]] || source $zaliases
+
+
 
