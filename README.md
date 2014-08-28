@@ -15,9 +15,17 @@ We support:
 Install
 -------
 
+### Mac OS X
+
 Read, then run the script:
 
-    bash <(wget -qO- https://raw.githubusercontent.com/jcarley/laptop/master/laptop.sh)
+    bash <(curl -s https://raw.githubusercontent.com/jcarley/laptop/master/mac) 2>&1 | tee ~/laptop.log
+
+### Linux
+
+Read, then run the script:
+
+    bash <(wget -qO- https://raw.githubusercontent.com/jcarley/laptop/master/linux) 2>&1 | tee ~/laptop.log
 
 What it sets up
 ---------------

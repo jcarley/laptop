@@ -1,0 +1,129 @@
+#!/usr/bin/env bash
+
+trap 'ret=$?; test $ret -ne 0 && printf "failed\n\n" >&2; exit $ret' EXIT
+
+set -e
+
+if [[ ! -d "$HOME/.bin/" ]]; then
+  mkdir "$HOME/.bin"
+fi
+
+fancy_echo() {
+  printf "\n%b\n" "$1"
+}
+
+brew_install_or_upgrade() {
+  if brew_is_installed "$1"; then
+    if brew_is_upgradable "$1"; then
+      brew upgrade "$@"
+    fi
+  else
+    brew install "$@"
+  fi
+}
+
+brew_is_installed() {
+  local NAME=$(brew_expand_alias "$1")
+
+  brew list -1 | grep -Fqx "$NAME"
+}
+
+brew_is_upgradable() {
+  local NAME=$(brew_expand_alias "$1")
+
+  local INSTALLED=$(brew ls --versions "$NAME" | awk '{print $NF}')
+  local LATEST=$(brew info "$NAME" 2>/dev/null | head -1 | awk '{gsub(/,/, ""); print $3}')
+
+  [ "$INSTALLED" != "$LATEST" ]
+}
+
+brew_expand_alias() {
+  brew info "$1" 2>/dev/null | head -1 | awk '{gsub(/:/, ""); print $1}'
+}
+
+if [[ -f /etc/zshenv ]]; then
+  fancy_echo "Fixing OSX zsh environment bug ..."
+    sudo mv /etc/{zshenv,zshrc}
+fi
+
+fancy_echo "Install Oh-My-Zsh, an open source framework for managing your ZSH configuration ..."
+  curl -L http://install.ohmyz.sh | sh
+
+  if [ ! -f "$HOME/.zshrc.local" ]; then
+    touch $HOME/.zshrc.local
+  fi
+
+  printf 'if [[ -f ~/.zshrc.local ]]; then\n' >> ~/.zshrc
+  printf '  source ~/.zshrc.local\n' >> ~/.zshrc
+  printf 'fi\n' >> ~/.zshrc
+
+  if [[ ":$PATH:" != *":$HOME/.bin:"* ]]; then
+    printf 'export PATH="$HOME/.bin:$PATH"\n' >> ~/.zshrc.local
+    export PATH="$HOME/.bin:$PATH"
+  fi
+
+if ! command -v brew &>/dev/null; then
+  fancy_echo "Installing Homebrew, a good OS X package manager ..."
+    ruby <(curl -fsS https://raw.githubusercontent.com/Homebrew/homebrew/go/install)
+
+  if ! grep -qs "recommended by brew doctor" ~/.zshrc; then
+    fancy_echo "Put Homebrew location earlier in PATH ..."
+      printf '\n# recommended by brew doctor\n' >> ~/.zshrc.local
+      printf 'export PATH="/usr/local/bin:$PATH"\n' >> ~/.zshrc.local
+      export PATH="/usr/local/bin:$PATH"
+  fi
+else
+  fancy_echo "Homebrew already installed. Skipping ..."
+fi
+
+fancy_echo "Updating Homebrew formulas ..."
+brew update
+
+fancy_echo "Upgrading and linking OpenSSL ..."
+  brew_install_or_upgrade 'openssl'
+  brew unlink openssl && brew link openssl --force
+
+fancy_echo "Installing zsh, a better shell ..."
+  brew_install_or_upgrade 'zsh'
+
+fancy_echo "Installing The Silver Searcher (better than ack or grep) to search the contents of files ..."
+  brew_install_or_upgrade 'the_silver_searcher'
+
+fancy_echo "Installing vim from Homebrew to get the latest version ..."
+  brew_install_or_upgrade 'vim'
+
+fancy_echo "Installing ctags, to index files for vim tab completion of methods, classes, variables ..."
+  brew_install_or_upgrade 'ctags'
+
+fancy_echo "Installing tmux, to save project state and switch between projects ..."
+  brew_install_or_upgrade 'tmux'
+
+fancy_echo "Installing reattach-to-user-namespace, for copy-paste and RubyMotion compatibility with tmux ..."
+  brew_install_or_upgrade 'reattach-to-user-namespace'
+
+fancy_echo "Installing tmux-mem-cpu-load, for CPU, RAM memory, and load monitoring in tmux ..."
+  brew_install_or_upgrade 'tmux-mem-cpu-load'
+
+fancy_echo "Installing git and git-flow, for source control and development workflow"
+  brew_install_or_upgrade 'git'
+  brew_install_or_upgrade 'git-flow'
+
+fancy_echo "Installing go and utils for necessary for go develop ..."
+  brew_install_or_upgrade 'go'
+  brew_install_or_upgrade 'bazaar'
+  brew_install_or_upgrade 'mercurial'
+
+fancy_echo "Installing packer, for creating identical machine images for multiple platforms from a single source configuration."
+  brew_install_or_upgrade 'packer'
+
+fancy_echo "Installing RabbitMQ, for doing reliable messaging between applications ..."
+  brew_install_or_upgrade 'rabbitmq'
+
+fancy_echo "Installing random utilities, siege, ssh-copy-id, psgrep, wget ..."
+  brew_install_or_upgrade 'siege'
+  brew_install_or_upgrade 'ssh-copy-id'
+  brew_install_or_upgrade 'psgrep'
+  brew_install_or_upgrade 'wget'
+
+
+
