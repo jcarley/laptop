@@ -58,9 +58,9 @@ fi
 fancy_echo "Updating Homebrew formulas ..."
   brew update
 
-fancy_echo "Upgrading and linking OpenSSL ..."
-  brew_install_or_upgrade 'openssl'
-  brew unlink openssl && brew link openssl --force
+# fancy_echo "Upgrading and linking OpenSSL ..."
+  # brew_install_or_upgrade 'openssl'
+  # brew unlink openssl && brew link openssl --force
 
 if [[ -f /etc/zshenv ]]; then
   fancy_echo "Fixing OSX zsh environment bug ..."
