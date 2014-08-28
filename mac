@@ -156,7 +156,7 @@ fancy_echo "Installing random utilities, siege, ssh-copy-id, psgrep, wget ..."
   brew_install_or_upgrade 'wget'
 
 fancy_echo "Cloning dotmatrix ..."
-  git clone git@github.com:jcarley/dotmatrix.git ~/dotmatrix
+  git clone https://github.com/jcarley/dotmatrix.git ~/dotmatrix
 
 fancy_echo "Linking in DropBox dotfiles ..."
   ln -s $HOME/Dropbox/dotfiles/home/git_template ~/.git_template
