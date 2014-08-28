@@ -41,27 +41,6 @@ brew_expand_alias() {
   brew info "$1" 2>/dev/null | head -1 | awk '{gsub(/:/, ""); print $1}'
 }
 
-if [[ -f /etc/zshenv ]]; then
-  fancy_echo "Fixing OSX zsh environment bug ..."
-    sudo mv /etc/{zshenv,zshrc}
-fi
-
-fancy_echo "Install Oh-My-Zsh, an open source framework for managing your ZSH configuration ..."
-  curl -L http://install.ohmyz.sh | sh
-
-  if [ ! -f "$HOME/.zshrc.local" ]; then
-    touch $HOME/.zshrc.local
-  fi
-
-  printf 'if [[ -f ~/.zshrc.local ]]; then\n' >> ~/.zshrc
-  printf '  source ~/.zshrc.local\n' >> ~/.zshrc
-  printf 'fi\n' >> ~/.zshrc
-
-  if [[ ":$PATH:" != *":$HOME/.bin:"* ]]; then
-    printf 'export PATH="$HOME/.bin:$PATH"\n' >> ~/.zshrc.local
-    export PATH="$HOME/.bin:$PATH"
-  fi
-
 if ! command -v brew &>/dev/null; then
   fancy_echo "Installing Homebrew, a good OS X package manager ..."
     ruby <(curl -fsS https://raw.githubusercontent.com/Homebrew/homebrew/go/install)
@@ -85,6 +64,59 @@ fancy_echo "Upgrading and linking OpenSSL ..."
 
 fancy_echo "Installing zsh, a better shell ..."
   brew_install_or_upgrade 'zsh'
+
+if [[ -f /etc/zshenv ]]; then
+  fancy_echo "Fixing OSX zsh environment bug ..."
+    sudo mv /etc/{zshenv,zshrc}
+fi
+
+fancy_echo "Install Oh-My-Zsh, an open source framework for managing your ZSH configuration ..."
+  curl -L http://install.ohmyz.sh | sh
+
+  if [ ! -f "$HOME/.zshrc.local" ]; then
+    touch $HOME/.zshrc.local
+  fi
+
+  printf 'if [[ -f ~/.zshrc.local ]]; then\n' >> ~/.zshrc
+  printf '  source ~/.zshrc.local\n' >> ~/.zshrc
+  printf 'fi\n' >> ~/.zshrc
+
+  if [[ ":$PATH:" != *":$HOME/.bin:"* ]]; then
+    printf 'export PATH="$HOME/.bin:$PATH"\n' >> ~/.zshrc.local
+    export PATH="$HOME/.bin:$PATH"
+  fi
+
+if [[ ! -d "$HOME/.rbenv" ]]; then
+  fancy_echo "Installing rbenv, to change Ruby versions ..."
+    curl https://raw.githubusercontent.com/jcarley/rbenv-installer/master/bin/rbenv-installer | bash
+
+    if ! grep -qs "rbenv init" ~/.zshrc.local; then
+      printf 'export PATH="$HOME/.rbenv/bin:$PATH"\n' >> ~/.zshrc.local
+      printf 'eval "$(rbenv init - --no-rehash)"\n' >> ~/.zshrc.local
+    fi
+
+    export PATH="$HOME/.rbenv/bin:$PATH"
+    eval "$(rbenv init -)"
+fi
+
+ruby_version="2.1.2"
+
+fancy_echo "Installing Ruby $ruby_version ..."
+  rbenv install -s "$ruby_version"
+
+fancy_echo "Setting $ruby_version as global default Ruby ..."
+  rbenv global "$ruby_version"
+  rbenv rehash
+
+fancy_echo "Updating to latest Rubygems version ..."
+  gem update --system
+
+fancy_echo "Installing Bundler to install project-specific Ruby gems ..."
+  gem install bundler --no-document
+
+fancy_echo "Configuring Bundler for faster, parallel gem installation ..."
+  number_of_cores=$(nproc)
+  bundle config --global jobs $((number_of_cores - 1))
 
 fancy_echo "Installing The Silver Searcher (better than ack or grep) to search the contents of files ..."
   brew_install_or_upgrade 'the_silver_searcher'
