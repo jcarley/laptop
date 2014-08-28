@@ -62,9 +62,6 @@ fancy_echo "Upgrading and linking OpenSSL ..."
   brew_install_or_upgrade 'openssl'
   brew unlink openssl && brew link openssl --force
 
-fancy_echo "Installing zsh, a better shell ..."
-  brew_install_or_upgrade 'zsh'
-
 if [[ -f /etc/zshenv ]]; then
   fancy_echo "Fixing OSX zsh environment bug ..."
     sudo mv /etc/{zshenv,zshrc}
