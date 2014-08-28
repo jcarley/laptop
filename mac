@@ -143,6 +143,7 @@ fancy_echo "Installing go and utils for necessary for go develop ..."
   brew_install_or_upgrade 'mercurial'
 
 fancy_echo "Installing packer, for creating identical machine images for multiple platforms from a single source configuration."
+  brew tap homebrew/binary
   brew_install_or_upgrade 'packer'
 
 fancy_echo "Installing RabbitMQ, for doing reliable messaging between applications ..."
