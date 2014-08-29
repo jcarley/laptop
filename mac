@@ -122,7 +122,7 @@ fancy_echo "Installing The Silver Searcher (better than ack or grep) to search t
   brew_install_or_upgrade 'the_silver_searcher'
 
 fancy_echo "Installing vim from Homebrew to get the latest version ..."
-  brew_install_or_upgrade 'vim'
+  brew_install_or_upgrade 'vim' --override-system-vi --with-lua
 
 fancy_echo "Installing ctags, to index files for vim tab completion of methods, classes, variables ..."
   brew_install_or_upgrade 'ctags'
@@ -167,8 +167,31 @@ fancy_echo "Linking in DropBox dotfiles ..."
   ln -s $HOME/Dropbox/dotfiles/home/vimrc.local ~/.vimrc.local
   ln -s $HOME/Dropbox/dotfiles/home/zsh_aliases ~/.zsh_aliases
 
-zaliases="$HOME/.zsh_aliases"
-[[ ! -a $zaliases ]] || source $zaliases
+
+fancy_echo "Setting up zsh environment settings ..."
+  if ! grep -qs "$HOME/.zsh_aliases" ~/.zshrc.local; then
+    printf 'zaliases="$HOME/.zsh_aliases"\n' >> ~/.zshrc.local
+    printf '[[ ! -a $zaliases ]] || source $zaliases\n' >> ~/.zshrc.local
+  fi
+
+  if ! grep -qs "unsetopt correct_all" ~/.zshrc.local; then
+    printf 'unsetopt correct_all\n' >> ~/.zshrc.local
+    printf 'unsetopt nomatch\n' >> ~/.zshrc.local
+  fi
+
+  if ! grep -qs "GOPATH" ~/.zshrc.local; then
+    mkdir -p $HOME/Projects/goworkspace
+    printf 'export LSCOLORS="ExGxBxDxCxEgEdxbxgxcxd"\n' >> ~/.zshrc.local
+    printf 'export GOPATH=$HOME/Projects/goworkspace\n' >> ~/.zshrc.local
+    printf 'export PATH=${GOPATH//://bin:}/bin:$PATH\n' >> ~/.zshrc.local
+  fi
+
+
+
+
+
+
+
 
 
 
