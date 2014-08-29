@@ -186,12 +186,3 @@ fancy_echo "Setting up zsh environment settings ..."
     printf 'export PATH=${GOPATH//://bin:}/bin:$PATH\n' >> ~/.zshrc.local
   fi
 
-
-
-
-
-
-
-
-
-
